@@ -14,7 +14,11 @@ SET Price = Price * 1.10
 
 
 -- SQL query to delete a specific order and its associated order details from the "Orders" and "OrderDetails" tables. Allow users to input the order ID as a parameter
+DELETE FROM OrderDetails
+WHERE order_id = @order_id;
 
+DELETE FROM Orders
+WHERE order_id = @order_id;
 
 --SQL query to insert a new order into the "Orders" table. Include the customer ID, order date, and any other necessary information
 INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount) VALUES
@@ -27,8 +31,13 @@ UPDATE Customers SET Email = 'mj@mail.com', Address = 'Egmore' WHERE CustomerID 
 
 
 -- SQL query to recalculate and update the total cost of each order in the "Orders" table based on the prices and quantities in the "OrderDetails" table
-
-
+UPDATE Orders
+SET TotalCost = (
+    SELECT SUM(od.quantity * p.price)
+    FROM OrderDetails od
+    JOIN Products p ON od.product_id = p.product_id 
+    WHERE od.order_id = Orders.order_id
+)
 
 -- SQL query to delete all orders and their associated order details for a specific customer from the "Orders" and "OrderDetails" tables. Allow users to input the customer ID
 -- as a parameter
@@ -44,8 +53,14 @@ INSERT INTO Products (ProductID, ProductName, Description, Price) VALUES
 
 
 -- SQL query to update the status of a specific order in the "Orders" table (e.g., from "Pending" to "Shipped"). Allow users to input the order ID and the new status.
-
-
+UPDATE Orders
+SET Status = @NewStatus
+WHERE order_id = @OrderID
 
 -- SQL query to calculate and update the number of orders placed by each customer in the "Customers" table based on the data in the "Orders" table
-
+UPDATE Customers
+SET order_count = (
+    SELECT COUNT(o.order_id)
+    FROM Orders o
+    WHERE o.customer_id = Customers.customer_id
+)
